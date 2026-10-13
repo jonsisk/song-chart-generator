@@ -25,7 +25,7 @@ WHITE='#ffffff'
 COLORS={'verse':'#eaf2df','chorus':'#ffecdd','prechorus':'#f1e5fc',
         'bridge':'#eee5fa','intro':'#e4edf5','solo':'#c31620',
         'instrumental':'#c31620','break':'#f7e6a2',
-        'outro':'#dfeaf6','other':'#edf0f3'}
+        'outro':'#dfeaf6','other':'#edf0f3','note': '#fff2a8'}
 DARK={'solo','instrumental'}
 PDF_REG,PDF_BOLD='Helvetica','Helvetica-Bold'
 
@@ -51,6 +51,7 @@ def kind_of(name):
     if s.startswith('verse') or re.match(r'^v\d',name.lower()): return 'verse'
     if s.startswith('chorus') or s in ('ch','c'): return 'chorus'
     if s.startswith('bridge'): return 'bridge'
+    if s.startswith('note'): return 'note'
     if 'solo' in s: return 'solo'
     if 'instrumental' in s: return 'instrumental'
     if 'break' in s or 'stop' in s: return 'break'
@@ -63,7 +64,7 @@ def short(name,kind):
     n=m.group(0).upper() if m else ''
     return {'verse':'V'+n,'chorus':'CH'+n,'prechorus':'PRE','bridge':'BR',
             'intro':'IN','solo':'SOLO','instrumental':'INST','break':'BREAK',
-            'outro':'OUT','other':name[:6].upper()}[kind]
+            'outro':'OUT','note': 'NOTE','other':name[:6].upper()}[kind]
 
 CHORDS=re.compile(r'^(?:[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add)?\d*(?:/[A-G](?:#|b)?)?|N\.C\.)(?:\s+(?:[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add)?\d*(?:/[A-G](?:#|b)?)?|N\.C\.))*$',re.I)
 
