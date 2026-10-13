@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142536">
+<title>Live Charts — Song Chart Generator</title>
+<link rel="stylesheet" href="/styles.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">♫</div><div><h1>LIVE CHARTS</h1><span>One song per slide · One deck for the whole show</span></div></div>
+  <div class="exports">
+    <span id="exportCount" class="export-count">1 song selected</span>
+    <button id="exportPpt" class="button primary">↓ PowerPoint</button>
+    <button id="exportPdf" class="button">↓ PDF</button>
+  </div>
+</header>
+<div class="workspace">
+  <aside class="sidebar">
+    <div class="side-heading"><div><div class="eyebrow">YOUR LIBRARY</div><h2>Setlist <span id="songCount">0</span></h2></div><button class="icon-button add-button" id="addBtn" title="Add song" aria-label="Add song">＋</button></div>
+    <p class="side-help">Drag songs or use arrows to change slide order. Uncheck a song to exclude it from the exported deck.</p>
+    <div class="songlist" id="songList"></div>
+    <div class="side-footer"><button id="backupBtn" class="quiet">↓ Backup library</button><label class="quiet import-button">↑ Import library <input id="importFile" type="file" accept=".json,application/json" hidden></label></div>
+  </aside>
+  <main class="main">
+    <div class="editing">
+      <div class="pane-header"><div><div class="eyebrow">SONG EDITOR</div><h2 id="editorHeading">Select a song</h2></div><div class="toolbar"><button class="quiet" id="duplicateBtn" title="Duplicate this song">Duplicate</button><button class="quiet danger" id="deleteBtn" title="Delete this song">Delete</button></div></div>
+      <div class="form-grid"><label>SONG TITLE <input id="titleInput" maxlength="160" placeholder="e.g. One Way or Another" autocomplete="off"></label><label>ARTIST <input id="artistInput" maxlength="160" placeholder="e.g. Blondie" autocomplete="off"></label></div>
+      <label class="chart-label" for="contentInput">LYRICS, CHORDS &amp; MUSICAL CUES</label>
+      <textarea id="contentInput" spellcheck="false" placeholder="[Verse 1]&#10;D5 | One way or another...&#10;B5 | One day, maybe next week...&#10;&#10;[Chorus]&#10;NOTE: Guitar doubles vocals&#10;I will drive past your house&#10;&#10;[Solo]&#10;! G# to A on high E" ></textarea>
+      <details class="syntax"><summary>Chart syntax cheat sheet <span>⌄</span></summary>
+        <div class="syntax-body">
+          <p><code>[Verse 1]</code> <code>[Chorus]</code> <code>[Bridge]</code> <code>[Solo]</code> <code>[Break]</code> <code>[Outro]</code> create colored sections. Any label inside square brackets works.</p>
+          <p><code>D5 | Lyric line...</code> places a chord above a lyric. You can also type <code>D5</code> on one line and the lyric on the next.</p>
+          <p><code>NOTE: Guitar doubles vocals</code> or <code>! Guitar doubles vocals</code> creates a bold musical reminder.</p>
+          <p>Every exported song is one slide. If a chart is too long, you will see a warning instead of clipped text.</p>
+        </div>
+      </details>
+      <div id="saveState" class="save-state" aria-live="polite">Saved locally</div>
+    </div>
+    <div class="preview-pane"><div class="pane-header"><div><div class="eyebrow">LIVE PREVIEW</div><h2>iPad portrait · 3:4</h2></div><span class="pill">Editable PPTX</span></div>
+      <div class="paper-wrap"><div class="paper" id="paper"><img id="preview" alt="Rendered chart preview"/><div id="previewMessage" class="preview-message">Loading preview…</div></div></div>
+      <div class="preview-foot">Slides are 7.5 × 10 inches, sized for the 9th-gen iPad. PDF matches PowerPoint styling.</div>
+    </div>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
