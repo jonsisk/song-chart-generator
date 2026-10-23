@@ -29,23 +29,23 @@ D5 | One way or another...
 B5 | One day, maybe next week...
 
 [Chorus]
-NOTE: Guitar doubles vocals
+BOLD: Guitar doubles vocals
 I will drive past your house
 
 [Break]
 4 BAR DRUM BREAK
 
 [Solo]
-NOTE: G# > A on high E string
+BOLD: G# > A on high E string
 
 [Outro]
 ! Single notes, not chords
 Repeat 3 times
 ```
 
-- Sections in square brackets set the background and label. Available colors: Verse, Chorus, Pre-chorus, Bridge, Intro, Solo, Instrumental, Break, and Outro.
-- `D5 | Lyric` puts the chord over that lyric. A standalone chord line followed by a lyric works too.
-- `NOTE:`, `CUE:`, or a line beginning with `!` makes a bold reminder.
+- Sections in square brackets set the background and label. Available colors: Verse, Chorus, Pre-chorus, Bridge, Intro, Solo, Instrumental, Break, Outro, and Note (yellow).
+- `[D]One way or [G]another` puts chords over the exact words or syllables where they change. The bracketed chords do not appear in the lyric line. `D5 | Lyric` puts a chord at the beginning of a lyric. A standalone chord line followed by a lyric works too.
+- `[Note]` creates a standalone yellow section. `BOLD: Guitar doubles vocals` makes only `Guitar doubles vocals` bold at the normal lyric size—the `BOLD:` prefix is never printed. The old `NOTE:` prefix is also supported (and hidden) so existing songs still work. `CUE:` and lines beginning with `!` retain their previous behavior.
 - Ordinary text creates a lyric line.
 - The colored roadmap at the top shows the structure of the whole song.
 

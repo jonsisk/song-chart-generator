@@ -83,7 +83,7 @@ async function addSong(copy=null){
   await flushSave();
   try{
     const song=await api('/api/songs',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(copy||{title:'New Song',artist:'',included:true,content:'[Verse 1]\nD5 | First line of the verse\n\n[Chorus]\nNOTE: Guitar cue goes here\nFirst line of the chorus\n\n[Outro]\nNOTE: Ending / stop cue'})});
+      body:JSON.stringify(copy||{title:'New Song',artist:'',included:true,content:'[Verse 1]\nD5 | First line of the verse\n\n[Chorus]\nBOLD: Guitar cue goes here\nFirst line of the chorus\n\n[Outro]\nBOLD: Ending / stop cue'})});
     songs.push(song);await select(song.id);$('titleInput').focus();$('titleInput').select();
   }catch(e){toast(e.message,true)}
 }

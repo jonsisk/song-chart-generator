@@ -29,12 +29,12 @@
       <div class="pane-header"><div><div class="eyebrow">SONG EDITOR</div><h2 id="editorHeading">Select a song</h2></div><div class="toolbar"><button class="quiet" id="duplicateBtn" title="Duplicate this song">Duplicate</button><button class="quiet danger" id="deleteBtn" title="Delete this song">Delete</button></div></div>
       <div class="form-grid"><label>SONG TITLE <input id="titleInput" maxlength="160" placeholder="e.g. One Way or Another" autocomplete="off"></label><label>ARTIST <input id="artistInput" maxlength="160" placeholder="e.g. Blondie" autocomplete="off"></label></div>
       <label class="chart-label" for="contentInput">LYRICS, CHORDS &amp; MUSICAL CUES</label>
-      <textarea id="contentInput" spellcheck="false" placeholder="[Verse 1]&#10;D5 | One way or another...&#10;B5 | One day, maybe next week...&#10;&#10;[Chorus]&#10;NOTE: Guitar doubles vocals&#10;I will drive past your house&#10;&#10;[Solo]&#10;! G# to A on high E" ></textarea>
+      <textarea id="contentInput" spellcheck="false" placeholder="[Verse 1]&#10;[D]One way or [G]another&#10;B5 | One day, maybe next week...&#10;&#10;[Chorus]&#10;BOLD: Guitar doubles vocals&#10;I will drive past your house&#10;&#10;[Solo]&#10;! G# to A on high E" ></textarea>
       <details class="syntax"><summary>Chart syntax cheat sheet <span>⌄</span></summary>
         <div class="syntax-body">
-          <p><code>[Verse 1]</code> <code>[Chorus]</code> <code>[Bridge]</code> <code>[Solo]</code> <code>[Break]</code> <code>[Outro]</code> create colored sections. Any label inside square brackets works.</p>
-          <p><code>D5 | Lyric line...</code> places a chord above a lyric. You can also type <code>D5</code> on one line and the lyric on the next.</p>
-          <p><code>NOTE: Guitar doubles vocals</code> or <code>! Guitar doubles vocals</code> creates a bold musical reminder.</p>
+          <p><code>[Verse 1]</code> <code>[Chorus]</code> <code>[Bridge]</code> <code>[Solo]</code> <code>[Break]</code> <code>[Outro]</code> <code>[Note]</code> create colored sections. Any label inside square brackets works.</p>
+          <p><code>[D]One way or [G]another</code> places chords directly over words or syllables. <code>D5 | Lyric line...</code> still places a chord at the start of a lyric. You can also type <code>D5</code> on one line and the lyric on the next.</p>
+          <p><code>[Note]</code> creates a yellow section for stage reminders. <code>BOLD: Guitar doubles vocals</code> makes just “Guitar doubles vocals” bold at normal text size; the prefix is hidden. The old <code>NOTE:</code> syntax still works. Lines beginning with <code>!</code> also create bold reminders.</p>
           <p>Every exported song is one slide. If a chart is too long, you will see a warning instead of clipped text.</p>
         </div>
       </details>

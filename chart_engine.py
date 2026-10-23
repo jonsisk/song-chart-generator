@@ -24,8 +24,8 @@ BORDER='#344e64'
 WHITE='#ffffff'
 COLORS={'verse':'#eaf2df','chorus':'#ffecdd','prechorus':'#f1e5fc',
         'bridge':'#eee5fa','intro':'#e4edf5','solo':'#c31620',
-        'instrumental':'#c31620','break':'#f7e6a2',
-        'outro':'#dfeaf6','other':'#edf0f3','note': '#fff2a8'}
+        'instrumental':'#c31620','break':'#f7e6a2','note':'#fff2a8',
+        'outro':'#dfeaf6','other':'#edf0f3'}
 DARK={'solo','instrumental'}
 PDF_REG,PDF_BOLD='Helvetica','Helvetica-Bold'
 
@@ -51,12 +51,12 @@ def kind_of(name):
     if s.startswith('verse') or re.match(r'^v\d',name.lower()): return 'verse'
     if s.startswith('chorus') or s in ('ch','c'): return 'chorus'
     if s.startswith('bridge'): return 'bridge'
-    if s.startswith('note'): return 'note'
     if 'solo' in s: return 'solo'
     if 'instrumental' in s: return 'instrumental'
     if 'break' in s or 'stop' in s: return 'break'
     if s.startswith('intro'): return 'intro'
     if s.startswith('outro') or s.startswith('ending') or s=='end': return 'outro'
+    if s.startswith('note'): return 'note'
     return 'other'
 
 def short(name,kind):
@@ -64,9 +64,62 @@ def short(name,kind):
     n=m.group(0).upper() if m else ''
     return {'verse':'V'+n,'chorus':'CH'+n,'prechorus':'PRE','bridge':'BR',
             'intro':'IN','solo':'SOLO','instrumental':'INST','break':'BREAK',
-            'outro':'OUT','note': 'NOTE','other':name[:6].upper()}[kind]
+            'outro':'OUT','note':'NOTE','other':name[:6].upper()}[kind]
 
 CHORDS=re.compile(r'^(?:[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add)?\d*(?:/[A-G](?:#|b)?)?|N\.C\.)(?:\s+(?:[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add)?\d*(?:/[A-G](?:#|b)?)?|N\.C\.))*$',re.I)
+
+# ChordPro-style [Am] markers are kept as anchors until the page is laid out.
+INLINE_CHORD = re.compile(r'\[([^\[\]\n]+)\]')
+
+def inline_parts(line):
+    """Return visible lyrics and (character offset, chord) anchors, or None."""
+    chunks=[]; anchors=[]; cursor=0; length=0
+    for match in INLINE_CHORD.finditer(line):
+        chord=match.group(1).strip()
+        if not CHORDS.fullmatch(chord):
+            continue
+        preceding=line[cursor:match.start()]
+        chunks.append(preceding)
+        length+=len(preceding)
+        anchors.append((length,chord))
+        cursor=match.end()
+    if not anchors:
+        return None
+    chunks.append(line[cursor:])
+    return ''.join(chunks),anchors
+
+def inline_wrapped(text,anchors,size,width):
+    """Split lyric text into lines while retaining chord anchor offsets."""
+    font=PDF_REG
+    words=list(re.finditer(r'\S+',text))
+    if not words:
+        return [('',[(0,chord) for _,chord in anchors])]
+    segments=[]; start=words[0].start(); end=words[0].end()
+    for word in words[1:]:
+        if pdfmetrics.stringWidth(text[start:word.end()],font,size)<=width:
+            end=word.end()
+        else:
+            segments.append((start,end))
+            start,end=word.start(),word.end()
+    segments.append((start,end))
+    # Break unusually long words too, avoiding any out-of-bounds text.
+    fitted=[]
+    for start,end in segments:
+        while start<end and pdfmetrics.stringWidth(text[start:end],font,size)>width:
+            cut=start+1
+            while cut<end and pdfmetrics.stringWidth(text[start:cut+1],font,size)<=width:
+                cut+=1
+            fitted.append((start,cut));start=cut
+        if start<end: fitted.append((start,end))
+    result=[]
+    for i,(start,end) in enumerate(fitted):
+        lineanchors=[]
+        for pos,chord in anchors:
+            # A marker in whitespace before the next wrapped word belongs to that word.
+            if start<=pos<end or (i==len(fitted)-1 and pos>=start) or (pos<start and (i==0 or pos>=fitted[i-1][1])):
+                lineanchors.append((max(0,pos-start),chord))
+        result.append((text[start:end],lineanchors))
+    return result
 
 def parse(song):
     sections=[]; current=None; pending=''
@@ -82,10 +135,17 @@ def parse(song):
             continue
         if current is None:
             current={'name':'Intro','kind':'intro','rows':[]}; sections.append(current)
-        if re.match(r'^(?:NOTE|CUE|GUITAR|KEYS|DRUMS|BASS):',line,re.I):
+        bold_match = re.match(r'^(?:BOLD|NOTE):\s*(.*)$', line, re.I)
+        if bold_match:
+            # NOTE: remains a legacy alias; neither prefix is printed.
+            if bold_match.group(1):
+                current['rows'].append(('bold', bold_match.group(1), ''))
+        elif re.match(r'^(?:CUE|GUITAR|KEYS|DRUMS|BASS):',line,re.I):
             current['rows'].append(('note',line,''))
         elif line.startswith('!'):
             current['rows'].append(('note',line[1:].strip(),''))
+        elif inline_parts(line) is not None:
+            current['rows'].append(('inline',line,''))
         elif ' | ' in line and CHORDS.fullmatch(line.split(' | ',1)[0].strip()):
             chord,lyric=line.split(' | ',1)
             current['rows'].append(('lyric',lyric.strip(),chord.strip()))
@@ -120,11 +180,26 @@ def section_layout(sec,y,size):
     kind=sec['kind'];fg=WHITE if kind in DARK else INK
     pad=5*size/11; gap=1.7*size/11; cursor=y+pad; cmds=[]
     for mode,text,chord in sec['rows']:
+        if mode=='inline':
+            visible,anchors=inline_parts(text)
+            chordsize=size*.84
+            for lyric,marks in inline_wrapped(visible,anchors,size,TW):
+                # Chord positions are measured against the actual rendered lyric font.
+                for offset,ch in marks:
+                    offset=min(offset,len(lyric))
+                    xx=TX+pdfmetrics.stringWidth(lyric[:offset],PDF_REG,size)
+                    xx=min(xx,TX+TW-pdfmetrics.stringWidth(ch,PDF_BOLD,chordsize))
+                    cmds.append((xx,cursor,ch,chordsize,True,fg))
+                cursor+=chordsize*1.22
+                cmds.append((TX,cursor,lyric,size,False,fg))
+                cursor+=size*1.22
+            cursor+=gap
+            continue
         if chord:
             s=size*.84
             for l in wrap(chord,PDF_BOLD,s,TW):cmds.append((TX,cursor,l,s,True,fg));cursor+=s*1.1
         s=size*(.93 if mode=='note' else .95 if mode=='chords' else 1.05 if kind in ('break','solo','instrumental') else 1)
-        emphasis=mode in ('note','chords') or kind in ('break','solo','instrumental')
+        emphasis=mode in ('note','chords','bold') or kind in ('break','solo','instrumental')
         font=PDF_BOLD if emphasis else PDF_REG
         for l in wrap(text,font,s,TW):
             cmds.append((TX,cursor,l,s,emphasis,fg));cursor+=s*(1.22 if mode!='chords' else 1.2)
